@@ -20,6 +20,7 @@ export class TransactionService {
                 type: data.type,
                 categoryId: data.categoryId,
                 userId,
+                updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined,
             },
             include: {
                 category: true,
@@ -57,6 +58,7 @@ export class TransactionService {
                 amount: data.amount,
                 type: data.type,
                 categoryId: data.categoryId,
+                updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
             },
             include: {
                 category: true,

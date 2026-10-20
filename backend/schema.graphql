@@ -4,14 +4,21 @@
 # -----------------------------------------------
 
 type CategoryModel {
+  color: String!
   createdAt: DateTimeISO!
+  description: String
+  icon: String!
   id: ID!
   name: String!
+  transactionCount: Int!
   updatedAt: DateTimeISO!
   userId: String!
 }
 
 input CreateCategoryInput {
+  color: String!
+  description: String
+  icon: String!
   name: String!
 }
 
@@ -20,6 +27,7 @@ input CreateTransactionInput {
   categoryId: String!
   title: String!
   type: String!
+  updatedAt: DateTimeISO
 }
 
 input CreateUserInput {
@@ -98,6 +106,9 @@ type TransactionModel {
 }
 
 input UpdateCategoryInput {
+  color: String
+  description: String
+  icon: String
   name: String!
 }
 
@@ -106,6 +117,7 @@ input UpdateTransactionInput {
   categoryId: String
   title: String
   type: String
+  updatedAt: DateTimeISO
 }
 
 input UpdateUserInput {
