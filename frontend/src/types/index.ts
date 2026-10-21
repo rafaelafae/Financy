@@ -7,6 +7,19 @@ export interface User {
     updatedAt: string
 }
 
+export interface UpdateUserResponse {
+    updateUser: User
+}
+
+export interface UpdateUserVariables {
+    id: string;
+    data: {
+        name?: string;
+        role?: string;
+        password?: string;
+    };
+}
+
 export interface RegisterInput {
     name: string
     email: string

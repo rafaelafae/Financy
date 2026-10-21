@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@apollo/client/react";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "sonner";
 import { LogOut, Mail, User as UserIcon } from "lucide-react";
@@ -10,15 +11,36 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { UPDATE_USER } from "@/lib/graphql/mutations/User";
+import { UpdateUserResponse, UpdateUserVariables } from "@/types";
+
 export function ProfilePage() {
 	const navigate = useNavigate();
 	const user = useAuthStore((state) => state.user);
+	const setUser = useAuthStore((state) => state.setUser);
 	const logout = useAuthStore((state) => state.logout);
 
 	const [name, setName] = useState(user?.name ?? "");
-	const [isSaving, setIsSaving] = useState(false);
 
 	const email = user?.email ?? "";
+
+	const [updateUserMutation, { loading: isSaving }] = useMutation<
+		UpdateUserResponse,
+		UpdateUserVariables
+	>(UPDATE_USER, {
+		onCompleted(data) {
+			if (data?.updateUser && user) {
+				setUser({
+					...user,
+					...data.updateUser,
+				});
+				toast.success("Alterações salvas com sucesso!");
+			}
+		},
+		onError(error) {
+			toast.error(error.message || "Erro ao salvar alterações.");
+		},
+	});
 
 	// Iniciais do Avatar
 	const initials = (name || user?.name || "U")
@@ -35,14 +57,19 @@ export function ProfilePage() {
 			return;
 		}
 
-		setIsSaving(true);
-		try {
-			toast.success("Alterações salvas com sucesso!");
-		} catch {
-			toast.error("Erro ao salvar alterações.");
-		} finally {
-			setIsSaving(false);
+		if (!user?.id) {
+			toast.error("Usuário não identificado.");
+			return;
 		}
+
+		await updateUserMutation({
+			variables: {
+				id: user.id,
+				data: {
+					name: name.trim(),
+				},
+			},
+		});
 	}
 
 	function handleLogout() {
@@ -58,7 +85,6 @@ export function ProfilePage() {
 					<CardContent className="p-0">
 						{/* Secção do Topo / Avatar */}
 						<CardHeader className="flex flex-col items-center text-center gap-6">
-
 							<div className="size-16 rounded-full bg-gray-300 border border-gray-300 text-gray-800 flex items-center justify-center text-[24px] font-medium tracking-tight select-none">
 								{initials}
 							</div>
@@ -70,13 +96,12 @@ export function ProfilePage() {
 									{email}
 								</CardDescription>
 							</div>
-
 						</CardHeader>
 
 						{/* Separador */}
 						<div className="my-8 w-full border-t border-gray-200" />
 
-						{/* Formulário com os mesmos estilos dos inputs de Login */}
+						{/* Formulário */}
 						<form onSubmit={handleSaveChanges} className="space-y-4">
 							{/* Nome completo */}
 							<div className="group space-y-2 text-left">
@@ -131,7 +156,7 @@ export function ProfilePage() {
 									disabled={isSaving}
 									className="w-full h-12 bg-brand-base hover:bg-brand-dark text-white text-[16px] font-medium rounded-lg cursor-pointer shadow-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 								>
-									{isSaving ? "A guardar..." : "Salvar alterações"}
+									{isSaving ? "A salvar..." : "Salvar alterações"}
 								</Button>
 
 								<Button
